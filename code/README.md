@@ -29,7 +29,7 @@ python train_network_real_large.py \
 --encoding_size 256 \      # dimension of node embedding
 --hidden_dim 128 \         # dimension of hidden units
 --edge_embedding_dim 256 \ # dimension of edge embedding
---conv_layer 5 \
+--conv_layer 5 \           # number of message passing layers
 --loss mae \               # loss function: mean absolute error
 --data_dir $PATH_TO_DFT_DATA \  # replace $PATH_TO_DFT_DATA with the directory data folder located at
 --use_layer_norm
