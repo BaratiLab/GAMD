@@ -1,5 +1,5 @@
 # GAMD
-Data and code for graph neural network accelerated molecular dynamics
+Data and code for Graph neural network Accelerated Molecular Dynamics
 
 ## Dependencies
 
