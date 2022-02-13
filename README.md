@@ -20,9 +20,9 @@ python generate_lj_data.py
 ```
     
 The generated data can also be downloaded from below links: </br>
-[Lennard Jones](https://drive.google.com/file/d/1jJdTAnhps1EIHDaBfb893fruaLPJzYKI/view?usp=sharing)  
-[TIP3P](https://drive.google.com/file/d/18uvKVtN8Xm_5w7AJuezFiR1d2AqlHFKn/view?usp=sharing)  
-[TIP4P-Ew](https://drive.google.com/file/d/1jBk78hN4ZPC9x-YXnznUzxFnXnpeKFRi/view?usp=sharing)
+-[Lennard Jones](https://drive.google.com/file/d/1jJdTAnhps1EIHDaBfb893fruaLPJzYKI/view?usp=sharing)  
+-[TIP3P](https://drive.google.com/file/d/18uvKVtN8Xm_5w7AJuezFiR1d2AqlHFKn/view?usp=sharing)  
+-[TIP4P-Ew](https://drive.google.com/file/d/1jBk78hN4ZPC9x-YXnznUzxFnXnpeKFRi/view?usp=sharing)
 
 The DFT data used in this work is derived from the paper:
 How van der Waals interactions determine the unique properties of water [(pdf)](https://www.pnas.org/content/113/30/8368.short) 
