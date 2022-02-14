@@ -37,4 +37,4 @@ python train_network_real_large.py \
 
 The pretrained model checkpoints are at corresponding subfolders. LJ's checkpoint is at```LJ/model_ckpt_lj```, water's checkpoint is at```water/model_ckpt_x```.
 
-To run the simulation using GAMD, please refer to the test_langevin.py/test_nosehoover.py scripts in the subfolder ```LJ/test_script/``` and ```water/test_script/```.
+To run the simulation using GAMD, please refer to the test_langevin.py/test_nosehoover.py scripts in the subfolder ```LJ/test_script/``` and ```water/test_script/```. As DGL does not support Torchscript currently, the integration of GAMD into OpenMM is achieved in a way with a lot of overheads that requires copying data from the simulation context and then update them.
