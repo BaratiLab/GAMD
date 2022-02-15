@@ -391,8 +391,8 @@ def train_model(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--min_epoch', default=11, type=int)
-    parser.add_argument('--max_epoch', default=11, type=int)
+    parser.add_argument('--min_epoch', default=30, type=int)
+    parser.add_argument('--max_epoch', default=30, type=int)
     parser.add_argument('--lr', default=3e-4, type=float)
     parser.add_argument('--cp_dir', default='./model_ckpt')
     parser.add_argument('--state_ckpt_dir', default=None, type=str)
