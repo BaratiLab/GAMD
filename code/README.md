@@ -23,6 +23,7 @@ To train on DFT data, it is recommended to use a larger model.
 cd water
 python train_network_real_large.py \
 --cp_dir model_ckpt_dft \   # where to store checkpoints
+--lr 1e-4 \
 --min_epoch 800 \
 --max_epoch 800 \
 --batch_size 8 \
@@ -34,6 +35,11 @@ python train_network_real_large.py \
 --data_dir $PATH_TO_DFT_DATA \  # replace $PATH_TO_DFT_DATA with the directory data folder located at
 --use_layer_norm
 ```
+
+The location of data folder should be placed under ```$PATH_TO_LJ_DATA``` and named as follow:
+- For LJ: ```lj_data```.
+- For TIP3P/TIP4P: ```water_data_x``` (x is TIP3P or TIP4P).
+- For DFT: ```RPBE-data-processed.npz```.
 
 The pretrained model checkpoints are at corresponding subfolders. LJ's checkpoint is at```LJ/model_ckpt_lj```, water's checkpoint is at```water/model_ckpt_x```.
 
