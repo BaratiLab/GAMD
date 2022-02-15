@@ -1,11 +1,9 @@
 import argparse
 import os, sys
-import joblib
 import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import StandardScaler
-from torch.optim import Adam
 from torch.optim.lr_scheduler import StepLR, ExponentialLR
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
@@ -402,7 +400,7 @@ def main():
     parser.add_argument('--lr', default=3e-4, type=float)
     parser.add_argument('--cp_dir', default='./model_ckpt')
     parser.add_argument('--state_ckpt_dir', default=None, type=str)
-    parser.add_argument('--batch_size', default=16, type=int)
+    parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--encoding_size', default=256, type=int)
     parser.add_argument('--hidden_dim', default=128, type=int)
     parser.add_argument('--edge_embedding_dim', default=256, type=int)

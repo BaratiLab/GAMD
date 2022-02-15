@@ -1,11 +1,9 @@
 import argparse
 import os, sys
-import joblib
 import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.preprocessing import StandardScaler
-from torch.optim import Adam
 from torch.optim.lr_scheduler import StepLR, ExponentialLR
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
@@ -15,8 +13,7 @@ import cupy
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 from nn_module import WaterMDDynamicBoxNet
-from train_utils import WaterDataReal, WaterDataRealLarge
-from graph_utils import NeighborSearcher, graph_network_nbr_fn
+from train_utils import WaterDataRealLarge
 # os.environ["CUDA_VISIBLE_DEVICES"] = "" # just to test if it works w/o gpu
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
 
@@ -354,7 +351,7 @@ def main():
     parser.add_argument('--cp_dir', default='./model_ckpt')
     parser.add_argument('--state_ckpt_dir', default=None, type=str)
 
-    parser.add_argument('--batch_size', default=16, type=int)
+    parser.add_argument('--batch_size', default=8, type=int)
     parser.add_argument('--encoding_size', default=256, type=int)
     parser.add_argument('--hidden_dim', default=128, type=int)
     parser.add_argument('--edge_embedding_dim', default=256, type=int)
@@ -368,7 +365,7 @@ def main():
     parser.add_argument('--disable_rotate_aug', dest='rotate_aug', default=True, action='store_false')
     parser.add_argument('--data_dir', default='./md_dataset')
     parser.add_argument('--use_part', action='store_true')    # use only part of the training data?
-    parser.add_argument('--loss', default='mse')
+    parser.add_argument('--loss', default='mae')
     parser.add_argument('--num_gpu', default=-1, type=int)
     args = parser.parse_args()
     train_model(args)
