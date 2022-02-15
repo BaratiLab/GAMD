@@ -25,7 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
 from hack_integrator import HackNoseHooverIntegrator, HackHalfNoseHooverIntegrator
-BOX_SCALE = 2.0   # to match the scale in experimental data
+BOX_SCALE = 2.0
 DT = 2.0
 
 platform = Platform.getPlatformByName('CPU')
@@ -45,11 +45,11 @@ GAMMA = 25. / unit.picosecond
 dummy_integrator = CompoundIntegrator()
 integrator1 = HackNoseHooverIntegrator(system, temperature,
                                        collision_frequency=GAMMA,
-                                       chain_length=0,
+                                       chain_length=10,
                                        timestep=timestep)
 integrator2 = HackHalfNoseHooverIntegrator(system, temperature,
                                            collision_frequency=GAMMA,
-                                           chain_length=0,
+                                           chain_length=10,
                                            timestep=timestep)
 dummy_integrator.addIntegrator(integrator1)
 dummy_integrator.addIntegrator(integrator2)
@@ -58,24 +58,14 @@ dummy_simulator = Simulation(topology, system, dummy_integrator, platform=platfo
 
 dummy_simulator.context.setPositions(positions)
 dummy_simulator.context.setVelocitiesToTemperature(temperature)
-# mass = np.ones((p_num*3, 1), dtype=np.float32)*1.008
-# mass[::3] = 15.9994
-# mass = mass*unit.amu
-print(system.getForces())
-
-
-def remove_force_offset(force):
-    offset = np.mean(force)
-    force = force - offset
-    return force
 
 # ===========================================================================
 from types import SimpleNamespace
 from train_network_tip3p import ParticleNetLightning
 NUM_OF_ATOMS = positions.shape[0]                  # (258*3)
 print(f'Simulating {NUM_OF_ATOMS} number of atoms')
-PATH = '../model_ckpt_tip3pnew_long/checkpoint_28.ckpt'
-SCALER_CKPT = '../model_ckpt_tip3pnew_long/scaler_28.npz'
+PATH = '../model_ckpt_tip3p/checkpoint.ckpt'
+SCALER_CKPT = '../model_ckpt_tip3p/scaler.npz'
 args = SimpleNamespace(use_layer_norm=True,
                        encoding_size=128,
                        hidden_dim=128,
@@ -101,15 +91,14 @@ feat = torch.from_numpy(particle_type_one_hot).float().cuda()
 dataReporter = StateDataReporter(f'./log_nvt_gnn_nosehoover.txt', 250,
                                  totalSteps=int(100000//DT),
                                 step=True, time=True,
-                                potentialEnergy=True, kineticEnergy=True, totalEnergy=True,
+                                kineticEnergy=True,
                                  temperature=True, separator='\t')
 dummy_simulator.reporters.append(dataReporter)
 dummy_simulator.minimizeEnergy()
 # pos_all = []
 # all_set = False
 dummy_state = dummy_simulator.context.getState(getPositions=True,
-                                               getVelocities=True,
-                                               getForces=True)
+                                               getVelocities=True)
 pos = dummy_state.getPositions(asNumpy=True).value_in_unit(unit.angstrom)
 vel = dummy_state.getVelocities(asNumpy=True)
 box_size = BOX_SCALE*10. * unit.angstrom            # (np.array([BOX_SCALE*10., BOX_SCALE*10., BOX_SCALE*10.], dtype=np.float32) * unit.angstrom)
@@ -117,10 +106,7 @@ box_size = BOX_SCALE*10. * unit.angstrom            # (np.array([BOX_SCALE*10., 
 force = model.predict_forces(feat, pos)
 force = force*(unit.kilojoules_per_mole/unit.nanometers)
 
-os.makedirs('./test_log_nose_hoover/', exist_ok=True)
-pos_all = []
 print(f'Using collision frequency: {GAMMA}')
-print(dataReporter)
 for t in range(int(50000//DT)):
     if (t+1)%500 == 0:
         print(f'Finished {(t+1)} steps')
@@ -140,10 +126,3 @@ for t in range(int(50000//DT)):
     integrator2.copy_state_from_integrator(integrator1)
     integrator2.setPerDofVariableByName('gnn_force', force)
     dummy_simulator.step(1)
-#     if t > 5000:
-#         dummy_state = dummy_simulator.context.getState(getPositions=True,
-#                                                        enforcePeriodicBox=True)
-#         pos = dummy_state.getPositions(asNumpy=True).value_in_unit(unit.bohrs)
-#         pos_all += [pos[None, ...]]   # in unit of bohrs
-# pos_all = np.concatenate(pos_all, axis=0)
-# np.save(os.path.join('./test_log_nose_hoover/', './real_nh_pos_gnn.npy'), pos_all)

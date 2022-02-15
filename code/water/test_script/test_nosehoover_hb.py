@@ -58,16 +58,6 @@ dummy_simulator = Simulation(topology, system, dummy_integrator, platform=platfo
 
 dummy_simulator.context.setPositions(positions)
 dummy_simulator.context.setVelocitiesToTemperature(temperature)
-# mass = np.ones((p_num*3, 1), dtype=np.float32)*1.008
-# mass[::3] = 15.9994
-# mass = mass*unit.amu
-print(system.getForces())
-
-
-def remove_force_offset(force):
-    offset = np.mean(force)
-    force = force - offset
-    return force
 
 # ===========================================================================
 from types import SimpleNamespace
@@ -86,6 +76,7 @@ args = SimpleNamespace(use_layer_norm=True,
                       rotate_aug=False,
                        update_edge=False,
                        use_part=False,
+                       expand_edge=True,
                       data_dir='',
                       loss='mse')
 model = ParticleNetLightning(args).load_from_checkpoint(PATH, args=args)
@@ -102,13 +93,13 @@ particle_type_one_hot = np.zeros((particle_type.size, 1), dtype=np.float32)
 particle_type_one_hot[particle_type.reshape(-1) == 1] = 1
 feat = torch.from_numpy(particle_type_one_hot).float().cuda()
 
-# dataReporter = StateDataReporter(f'./log_nvt_gnn_nosehoover.txt',
-#                                  100,
-#                                  totalSteps=int(100000//DT),
-#                                 step=True, time=True,
-#                                 potentialEnergy=True, kineticEnergy=True, totalEnergy=True,
-#                                  temperature=True, separator='\t')
-# dummy_simulator.reporters.append(dataReporter)
+dataReporter = StateDataReporter(f'./log_nvt_gnn_nosehoover.txt',
+                                 250,
+                                 totalSteps=int(100000//DT),
+                                step=True, time=True,
+                                 kineticEnergy=True,
+                                 temperature=True, separator='\t')
+dummy_simulator.reporters.append(dataReporter)
 dummy_simulator.minimizeEnergy()
 
 dummy_state = dummy_simulator.context.getState(getPositions=True,

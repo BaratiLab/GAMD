@@ -55,15 +55,6 @@ dummy_simulator = Simulation(topology, system, dummy_integrator, platform=platfo
 
 dummy_simulator.context.setPositions(positions)
 dummy_simulator.context.setVelocitiesToTemperature(temperature)
-# mass = np.ones((p_num*3, 1), dtype=np.float32)*1.008
-# mass[::3] = 15.9994
-# mass = mass*unit.amu
-print(system.getForces())
-
-def remove_force_offset(force):
-    offset = np.mean(force)
-    force = force - offset
-    return force
 
 # ===========================================================================
 # ===========================================================================
@@ -95,18 +86,17 @@ particle_type_one_hot = np.zeros((particle_type.size, 1), dtype=np.float32)
 particle_type_one_hot[particle_type.reshape(-1) == 1] = 1
 feat = torch.from_numpy(particle_type_one_hot).float().cuda()
 
-# dataReporter = StateDataReporter('log_nvt_gnn_langevin.txt', 100,
-#                                  totalSteps=int(100000//DT),
-#                                 step=True, time=True,
-#                                 potentialEnergy=True, kineticEnergy=True, totalEnergy=True,
-#                                  temperature=True, separator='\t')
-# dummy_simulator.reporters.append(dataReporter)
+dataReporter = StateDataReporter('log_nvt_gnn_langevin.txt', 100,
+                                 totalSteps=int(100000//DT),
+                                step=True, time=True,
+                                 kineticEnergy=True,
+                                 temperature=True, separator='\t')
+dummy_simulator.reporters.append(dataReporter)
 
 dummy_simulator.minimizeEnergy()
 
 dummy_state = dummy_simulator.context.getState(getPositions=True,
-                                               getVelocities=True,
-                                               getForces=True)
+                                               getVelocities=True)
 pos = dummy_state.getPositions(asNumpy=True).value_in_unit(unit.angstrom)
 vel = dummy_state.getVelocities(asNumpy=True)
 
@@ -122,13 +112,10 @@ for t in range(int(50000//DT)):
     integrator1.setPerDofVariableByName('force_last', force)
     dummy_simulator.step(1)
     dummy_state = dummy_simulator.context.getState(getPositions=True,
-                                                   getForces=True,
                                                    enforcePeriodicBox=True)
     pos = dummy_state.getPositions(asNumpy=True).value_in_unit(unit.angstrom)
-    gt_force = dummy_state.getForces(asNumpy=True).value_in_unit(unit.kilojoules_per_mole / unit.nanometers)
 
-    force = model.predict_forces(feat, pos, verbose=True)
-    mae = np.mean(np.abs(gt_force-force))*0.0010364   # to ev/A
+    force = model.predict_forces(feat, pos)
     force = force * (unit.kilojoules_per_mole / unit.nanometers)
     dummy_integrator.setCurrentIntegrator(1)
     integrator2.setPerDofVariableByName('gnn_force', force)

@@ -24,7 +24,7 @@ from functools import partial
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-from hack_integrator import HackLangevinIntegrator, HackDummyIntegrator, HackHalfVelocityIntegrator
+from hack_integrator import HackLangevinIntegrator, HackHalfVelocityIntegrator
 BOX_SCALE = 2.0
 DT = 2.0
 
@@ -55,15 +55,6 @@ dummy_simulator = Simulation(topology, system, dummy_integrator, platform=platfo
 
 dummy_simulator.context.setPositions(positions)
 dummy_simulator.context.setVelocitiesToTemperature(temperature)
-# mass = np.ones((p_num*3, 1), dtype=np.float32)*1.008
-# mass[::3] = 15.9994
-# mass = mass*unit.amu
-print(system.getForces())
-
-def remove_force_offset(force):
-    offset = np.mean(force)
-    force = force - offset
-    return force
 
 # ===========================================================================
 # ===========================================================================
@@ -85,7 +76,7 @@ args = SimpleNamespace(use_layer_norm=True,
                        update_edge=False,
                        use_part=False,
                       data_dir='',
-                      loss='mse')
+                      loss='mae')
 model = ParticleNetLightning(args).load_from_checkpoint(PATH, args=args)
 model.load_training_stats(SCALER_CKPT)
 model.cuda()
@@ -100,18 +91,17 @@ particle_type_one_hot = np.zeros((particle_type.size, 1), dtype=np.float32)
 particle_type_one_hot[particle_type.reshape(-1) == 1] = 1
 feat = torch.from_numpy(particle_type_one_hot).float().cuda()
 
-# dataReporter = StateDataReporter('log_nvt_gnn_langevin.txt', 100,
-#                                  totalSteps=int(100000//DT),
-#                                 step=True, time=True,
-#                                 potentialEnergy=True, kineticEnergy=True, totalEnergy=True,
-#                                  temperature=True, separator='\t')
-# dummy_simulator.reporters.append(dataReporter)
+dataReporter = StateDataReporter('log_nvt_gnn_langevin.txt', 250,
+                                 totalSteps=int(100000//DT),
+                                step=True, time=True,
+                                kineticEnergy=True,
+                                 temperature=True, separator='\t')
+dummy_simulator.reporters.append(dataReporter)
 
 dummy_simulator.minimizeEnergy()
 
 dummy_state = dummy_simulator.context.getState(getPositions=True,
-                                               getVelocities=True,
-                                               getForces=True)
+                                               getVelocities=True)
 pos = dummy_state.getPositions(asNumpy=True).value_in_unit(unit.bohrs)
 vel = dummy_state.getVelocities(asNumpy=True)
 
