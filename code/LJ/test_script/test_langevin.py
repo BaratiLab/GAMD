@@ -24,7 +24,7 @@ from functools import partial
 sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-from hack_integrator import HackLangevinIntegrator, HackDummyIntegrator, HackHalfVelocityIntegrator
+from hack_integrator import HackLangevinIntegrator, HackHalfVelocityIntegrator
 BOX_SCALE = 2.0
 DT = 2.0
 
@@ -51,15 +51,6 @@ dummy_simulator = Simulation(topology, system, dummy_integrator, platform=platfo
 
 dummy_simulator.context.setPositions(pos*unit.angstrom)
 dummy_simulator.context.setVelocitiesToTemperature(temperature)
-# mass = np.ones((p_num*3, 1), dtype=np.float32)*1.008
-# mass[::3] = 15.9994
-# mass = mass*unit.amu
-print(system.getForces())
-
-def remove_force_offset(force):
-    offset = np.mean(force)
-    force = force - offset
-    return force
 
 # ===========================================================================
 # ===========================================================================
@@ -87,15 +78,13 @@ model.eval()
 
 dataReporter = StateDataReporter('log_nvt_gnn_langevin_lj.txt', 100,
                                  totalSteps=int(100000//DT),
-                                step=True, time=True,
-                                potentialEnergy=True, kineticEnergy=True, totalEnergy=True,
+                                step=True, time=True, kineticEnergy=True,
                                  temperature=True, separator='\t')
 dummy_simulator.reporters.append(dataReporter)
 dummy_simulator.minimizeEnergy(1e-6)
 
 dummy_state = dummy_simulator.context.getState(getPositions=True,
-                                               getVelocities=True,
-                                               getForces=True)
+                                               getVelocities=True)
 pos = dummy_state.getPositions(asNumpy=True).value_in_unit(unit.angstrom)
 vel = dummy_state.getVelocities(asNumpy=True)
 

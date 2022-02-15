@@ -37,7 +37,7 @@ pos = np.load('../init_pos.npy')
 p_num = positions.shape[0]
 timestep = DT * unit.femtoseconds
 temperature = 100 * unit.kelvin
-chain_length = 20
+chain_length = 10
 GAMMA = 25. / unit.picosecond
 dummy_integrator = CompoundIntegrator()
 integrator1 = HackNoseHooverIntegrator(system, temperature,
@@ -55,16 +55,6 @@ dummy_simulator = Simulation(topology, system, dummy_integrator, platform=platfo
 
 dummy_simulator.context.setPositions(pos*unit.angstrom)
 dummy_simulator.context.setVelocitiesToTemperature(temperature)
-# mass = np.ones((p_num*3, 1), dtype=np.float32)*1.008
-# mass[::3] = 15.9994
-# mass = mass*unit.amu
-print(system.getForces())
-
-
-def remove_force_offset(force):
-    offset = np.mean(force)
-    force = force - offset
-    return force
 
 # ===========================================================================
 from types import SimpleNamespace
@@ -92,7 +82,7 @@ model.eval()
 dataReporter = StateDataReporter(f'./log_nvt_gnn_nosehoover.txt', 100,
                                  totalSteps=int(100000//DT),
                                 step=True, time=True,
-                                potentialEnergy=True, kineticEnergy=True, totalEnergy=True,
+                                kineticEnergy=True,
                                  temperature=True, separator='\t')
 dummy_simulator.reporters.append(dataReporter)
 dummy_simulator.minimizeEnergy(1e-6)
